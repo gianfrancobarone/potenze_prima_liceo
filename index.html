@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Potenze passo passo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Nunito+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbf8f1; --grid:#dfe7f2; --ink:#1d2a57; --ink-soft:#4a5784; --muted:#7b84a3;
+  --red:#d6453d; --red-bg:#fdeceb; --green:#1f8a5b; --green-bg:#e5f5ed; --accent:#f2b134;
+  --card:#ffffff; --line:#e3e1d8; --shadow:0 1px 0 #e6e2d6, 0 8px 24px -12px rgba(29,42,87,.25);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Nunito Sans",system-ui,sans-serif;color:var(--ink);background:#efe9dc;min-height:100vh}
+button{font:inherit;color:inherit}
+math{font-family:"STIX Two Math","Latin Modern Math","Cambria Math",math;}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand h1{font-family:Fraunces,serif;font-weight:800;font-size:28px;margin:0;letter-spacing:-.5px}
+.brand h1 sup{font-size:.55em;color:var(--red)}
+.brand span{color:var(--muted);font-size:14px}
+.stats{display:flex;gap:8px}
+.stat{background:var(--card);border-radius:12px;padding:6px 12px;box-shadow:var(--shadow);text-align:center;min-width:72px}
+.stat b{display:block;font-size:20px;line-height:1.1}
+.stat small{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.levels{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.lv{position:relative;width:42px;height:42px;border-radius:10px;border:2px solid transparent;background:var(--card);box-shadow:var(--shadow);font-weight:800;cursor:pointer;transition:transform .12s}
+.lv:hover{transform:translateY(-2px)}
+.lv.on{background:var(--ink);color:#fff}
+.lv .dots{position:absolute;left:0;right:0;bottom:3px;display:flex;justify-content:center;gap:2px}
+.lv .dots i{width:5px;height:5px;border-radius:50%;background:#d8d6cc}
+.lv .dots i.f{background:var(--accent)}
+.lv.done::after{content:"✓";position:absolute;top:-6px;right:-6px;background:var(--green);color:#fff;border-radius:50%;width:17px;height:17px;font-size:11px;line-height:17px}
+.lvinfo{margin:8px 0 18px;color:var(--ink-soft);font-size:15px}
+.lvinfo b{font-family:Fraunces,serif;color:var(--ink);font-size:17px}
+.grid{display:grid;grid-template-columns:1fr;gap:18px}
+.paper{position:relative;background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px;border-radius:14px;box-shadow:var(--shadow);padding:18px 18px 18px 46px;overflow:hidden}
+.paper::before{content:"";position:absolute;left:30px;top:0;bottom:0;width:2px;background:#f0b4ae}
+.paper-head{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-bottom:6px;gap:8px;flex-wrap:wrap}
+.code{font-family:ui-monospace,Menlo,monospace;background:#fff;border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--ink-soft)}
+.board{overflow-x:auto;padding-bottom:4px}
+.row{display:flex;align-items:center;gap:10px;min-height:60px;font-size:21px;padding:4px 0;width:max-content;min-width:100%}
+.row .eq{width:20px;flex:none;color:var(--muted);font-weight:800;text-align:center}
+.row math{margin:0}
+.row .tag{font-size:12px;color:var(--muted);margin-left:8px;white-space:nowrap}
+.row.cur{color:var(--ink)}
+.row.cur .eq{color:var(--red)}
+.row.old{color:var(--ink-soft)}
+.row.res math{background:var(--accent);border-radius:8px;padding:2px 10px}
+.task{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 10px;flex-wrap:wrap}
+.task h2{font-family:Fraunces,serif;font-size:20px;margin:0}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer;background:var(--card);box-shadow:var(--shadow)}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.ghost{background:transparent;box-shadow:none;border:2px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:default}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{position:relative;display:flex;align-items:center;justify-content:center;min-height:86px;background:var(--card);border:2px solid transparent;border-radius:14px;box-shadow:var(--shadow);cursor:pointer;padding:14px 14px 14px 44px;font-size:20px;overflow-x:auto;transition:transform .12s,border-color .12s}
+.opt:hover:not(:disabled){transform:translateY(-2px);border-color:#c9d1e8}
+.opt .k{position:absolute;left:12px;top:12px;width:24px;height:24px;border-radius:7px;background:#eef0f7;color:var(--ink-soft);font-size:13px;font-weight:800;display:grid;place-items:center}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--green);background:var(--green-bg)}
+.opt.ok .k{background:var(--green);color:#fff}
+.opt.ko{border-color:var(--red);background:var(--red-bg)}
+.opt.ko .k{background:var(--red);color:#fff}
+.opt.dim{opacity:.45}
+.fb{margin-top:14px;border-radius:14px;padding:14px 16px;display:none;gap:14px;align-items:flex-start}
+.fb.show{display:flex}
+.fb.good{background:var(--green-bg)}
+.fb.bad{background:var(--red-bg)}
+.fb.hint{background:#fff6df}
+.fb .ic{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800}
+.fb.good .ic{background:var(--green)} .fb.bad .ic{background:var(--red)} .fb.hint .ic{background:var(--accent)}
+.fb .txt{flex:1;font-size:15px;line-height:1.45}
+.fb .txt h3{margin:0 0 2px;font-size:16px}
+.fb .txt p{margin:2px 0}
+.fb .actions{flex:none;align-self:center}
+.finish{text-align:center;padding:10px 0 4px}
+.finish h2{font-family:Fraunces,serif;font-size:26px;margin:4px 0}
+.finish p{color:var(--ink-soft);margin:4px 0 14px}
+.finish .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.foot{margin-top:26px;font-size:13px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.foot input{font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:130px;background:#fff}
+.btn.small{padding:7px 12px;font-size:14px}
+.modebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.seg{display:inline-flex;background:var(--card);border-radius:12px;padding:4px;box-shadow:var(--shadow)}
+.seg button{border:0;background:transparent;padding:8px 16px;border-radius:9px;font-weight:800;cursor:pointer;color:var(--ink-soft)}
+.seg button.on{background:var(--ink);color:#fff}
+.seg #mArc.on{background:var(--red)}
+.arcinfo{flex:1;font-size:14px;color:var(--ink-soft);min-width:180px}
+.arcinfo b{color:var(--ink)}
+.pips{display:inline-flex;gap:4px;vertical-align:middle;margin-left:6px}
+.pips i{width:12px;height:12px;border-radius:50%;background:#d8d6cc}
+.pips i.f{background:var(--green)}
+.lv:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.lv.lock::before{content:"🔒";position:absolute;top:-7px;right:-7px;font-size:11px}
+body.arcade .lv.on{background:var(--red)}
+.modal{position:fixed;inset:0;background:rgba(20,26,50,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal.show{display:flex}
+.mbox{background:var(--paper);border-radius:18px;max-width:520px;width:100%;max-height:92vh;overflow:auto;padding:22px;box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}
+.mbox h2{font-family:Fraunces,serif;margin:0 0 6px;font-size:24px}
+.mbox p{color:var(--ink-soft);margin:6px 0 12px;line-height:1.45}
+.mbox label{display:block;font-weight:800;font-size:14px;margin:10px 0 4px}
+.mbox input{width:100%;font:inherit;border:2px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+.mbox .row2{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.cert{position:relative;border-radius:16px;padding:20px;color:#fff;background:linear-gradient(135deg,hsl(var(--h),62%,38%),hsl(calc(var(--h) + 40),70%,30%));overflow:hidden}
+.cert::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
+.cert .badge{width:64px;height:64px;border-radius:50%;background:var(--accent);color:var(--ink);display:grid;place-items:center;font-family:Fraunces,serif;font-weight:800;font-size:28px;box-shadow:0 0 0 5px rgba(255,255,255,.25)}
+.cert .top{display:flex;gap:14px;align-items:center}
+.cert h3{margin:0;font-family:Fraunces,serif;font-size:21px}
+.cert small{opacity:.85}
+.cert .who{margin:14px 0 4px;font-size:15px}
+.scratch{position:relative;margin-top:10px;height:64px;border-radius:12px;background:#fff;color:var(--ink);display:grid;place-items:center;font-family:ui-monospace,Menlo,monospace;font-size:26px;font-weight:800;letter-spacing:2px;user-select:none}
+.scratch canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:12px;touch-action:none;cursor:grab}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.bd{border-radius:12px;padding:10px;background:#fff;box-shadow:var(--shadow);font-size:13px}
+.bd .n{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;background:hsl(var(--h),55%,42%);margin-bottom:6px}
+.bd.off{opacity:.45}.bd.off .n{background:#bbb}
+.bd code{display:block;margin-top:4px;font-size:13px;color:var(--ink)}
+.bd button{margin-top:6px}
+.vres{margin-top:12px;border-radius:10px;padding:10px 12px;font-weight:800}
+.vres.ok{background:var(--green-bg);color:var(--green)}.vres.ko{background:var(--red-bg);color:var(--red)}
+@media (max-width:640px){
+  .opts{grid-template-columns:1fr}
+  .row{font-size:16px}
+  .opt{font-size:17px;min-height:70px}
+  .brand h1{font-size:23px}
+  .paper{padding-left:38px}.paper::before{left:24px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><h1>Potenze <sup>passo passo</sup></h1><span>espressioni con le frazioni</span></div>
+    <div class="stats">
+      <div class="stat"><b id="sScore">0</b><small>Punti</small></div>
+      <div class="stat"><b id="sStreak">0</b><small>Serie</small></div>
+      <div class="stat"><b id="sDone">0</b><small>Esercizi</small></div>
+    </div>
+  </header>
+  <div class="modebar">
+    <div class="seg" role="tablist" aria-label="Modalità">
+      <button id="mTrain" role="tab">Allenamento</button>
+      <button id="mArc" role="tab">Arcade</button>
+    </div>
+    <div class="arcinfo" id="arcInfo"></div>
+    <button class="btn ghost small" id="boardBtn">Bacheca certificati</button>
+  </div>
+  <nav class="levels" id="levels" aria-label="Livelli"></nav>
+  <div class="lvinfo" id="lvinfo"></div>
+
+  <div class="grid">
+    <section class="paper" aria-live="polite">
+      <div class="paper-head"><span id="stepInfo"></span><span>codice <span class="code" id="code"></span></span></div>
+      <div class="board" id="board"></div>
+    </section>
+
+    <section id="play">
+      <div class="task">
+        <h2 id="ask">Qual è il passaggio corretto?</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn ghost" id="hintBtn" title="Costa 3 punti">Suggerimento</button>
+          <button class="btn ghost" id="skipBtn">Nuovo esercizio</button>
+        </div>
+      </div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb"><div class="ic" id="fbIc"></div><div class="txt" id="fbTxt"></div><div class="actions"><button class="btn primary" id="nextBtn">Avanti →</button></div></div>
+    </section>
+  </div>
+
+  <div class="foot">
+    <span>Tasti: 1–4 per scegliere, Invio per continuare.</span>
+    <span style="margin-left:auto">Carica un esercizio dal codice:</span>
+    <input id="codeIn" placeholder="es. 5-12345" aria-label="Codice esercizio"><button class="btn" id="codeBtn">Carica</button>
+    <button class="btn ghost small" id="verifyBtn">Area docente: verifica certificato</button>
+  </div>
+</div>
+<div class="modal" id="modal" role="dialog" aria-modal="true"><div class="mbox" id="mbox"></div></div>
+
+<script>
+// ================= MOTORE: frazioni, alberi, risolutore, distrattori =================
+// Funziona sia nel browser che in Node (per i test).
+
+// ---------- Frazioni esatte (BigInt) ----------
+function bgcd(a, b) { a = a < 0n ? -a : a; b = b < 0n ? -b : b; while (b) { [a, b] = [b, a % b]; } return a; }
+class Fr {
+  constructor(n, d = 1n) {
+    n = BigInt(n); d = BigInt(d);
+    if (d === 0n) throw new Error('div0');
+    if (d < 0n) { n = -n; d = -d; }
+    const g = bgcd(n, d) || 1n;
+    this.n = n / g; this.d = d / g;
+  }
+  static parse(s) { const [a, b] = String(s).split('/'); return new Fr(BigInt(a), BigInt(b || 1)); }
+  add(o) { return new Fr(this.n * o.d + o.n * this.d, this.d * o.d); }
+  sub(o) { return new Fr(this.n * o.d - o.n * this.d, this.d * o.d); }
+  mul(o) { return new Fr(this.n * o.n, this.d * o.d); }
+  div(o) { if (o.n === 0n) throw new Error('div0'); return new Fr(this.n * o.d, this.d * o.n); }
+  inv() { if (this.n === 0n) throw new Error('div0'); return new Fr(this.d, this.n); }
+  neg() { return new Fr(-this.n, this.d); }
+  abs() { return new Fr(this.n < 0n ? -this.n : this.n, this.d); }
+  pow(k) {
+    if (k === 0) { if (this.n === 0n) throw new Error('0^0'); return new Fr(1n); }
+    const b = k < 0 ? this.inv() : this; const e = BigInt(Math.abs(k));
+    return new Fr(b.n ** e, b.d ** e);
+  }
+  eq(o) { return this.n === o.n && this.d === o.d; }
+  isOne() { return this.n === 1n && this.d === 1n; }
+  isZero() { return this.n === 0n; }
+  isNeg() { return this.n < 0n; }
+  size() { const a = this.n < 0n ? -this.n : this.n; return a > this.d ? a : this.d; }
+  key() { return this.d === 1n ? `${this.n}` : `${this.n}/${this.d}`; }
+}
+
+// ---------- Nodi ----------
+// n: numero (frazione)  p: potenza (base, esponente intero)  b: operazione binaria
+const N = v => ({ t: 'n', v: v instanceof Fr ? v : Fr.parse(v) });
+const P = (b, e) => ({ t: 'p', b: (b instanceof Fr || typeof b === 'string') ? N(b) : b, e });
+const B = (op, l, r) => ({ t: 'b', op, l, r });
+// potenza "pulita": esponente 1 -> numero
+const mkPow = (base, e) => e === 1 ? N(base) : P(N(base), e);
+
+function evalNode(x) {
+  if (x.t === 'n') return x.v;
+  if (x.t === 'p') return evalNode(x.b).pow(x.e);
+  const a = evalNode(x.l), b = evalNode(x.r);
+  switch (x.op) { case '+': return a.add(b); case '-': return a.sub(b); case '*': return a.mul(b); case ':': return a.div(b); }
+}
+
+const PREC = { '+': 1, '-': 1, '*': 2, ':': 2 };
+const OPTXT = { '+': '+', '-': '−', '*': '·', ':': ':' };
+
+function toText(x) {
+  if (x.t === 'n') return x.v.key();
+  if (x.t === 'p') return `(${toText(x.b)})^${x.e}`;
+  return `(${toText(x.l)}${x.op}${toText(x.r)})`;
+}
+
+function getAt(tree, path) { let x = tree; for (const k of path) x = x[k]; return x; }
+function setAt(tree, path, val) {
+  if (path.length === 0) return val;
+  const [k, ...rest] = path; const copy = { ...tree }; copy[k] = setAt(tree[k], rest, val); return copy;
+}
+
+const isSettled = x => x.t === 'n' || (x.t === 'p' && x.b.t === 'n');
+const asPow = x => x.t === 'n' ? { base: x.v, exp: 1 } : { base: x.b.v, exp: x.e };
+
+// ---------- Regole ----------
+// Ogni regola restituisce { id, name, explain, out: nodo corretto, bugs: [{node, msg}] }
+const R = {};
+
+R.sameBase = (node) => {
+  const a = asPow(node.l), b = asPow(node.r), base = a.base, m = a.exp, n = b.exp;
+  const mul = node.op === '*';
+  const k = mul ? m + n : m - n;
+  const bugs = [];
+  if (mul) {
+    bugs.push({ node: mkPow(base, m * n), msg: 'Nel prodotto di potenze con la stessa base gli esponenti si <b>sommano</b>, non si moltiplicano.' });
+    bugs.push({ node: mkPow(base, m - n), msg: 'Nel prodotto di potenze con la stessa base gli esponenti si <b>sommano</b>, non si sottraggono.' });
+    bugs.push({ node: P(N(base.mul(base)), k), msg: 'La base resta la stessa: le basi <b>non</b> si moltiplicano tra loro.' });
+    if (m < 0 || n < 0) bugs.push({ node: mkPow(base, Math.abs(m) + Math.abs(n)), msg: 'Attenzione ai segni: sommando un esponente negativo il risultato diminuisce.' });
+  } else {
+    bugs.push({ node: mkPow(base, m + n), msg: 'Nel quoziente di potenze con la stessa base gli esponenti si <b>sottraggono</b>, non si sommano.' });
+    bugs.push({ node: mkPow(base, n - m), msg: 'Si sottrae l’esponente del divisore da quello del dividendo, non il contrario.' });
+    if (n !== 0 && m % n === 0) bugs.push({ node: mkPow(base, m / n), msg: 'Gli esponenti si sottraggono, non si dividono.' });
+    bugs.push({ node: P(N('1'), k), msg: 'La base non si divide per sé stessa: resta la stessa base.' });
+    if (n < 0) bugs.push({ node: mkPow(base, m - Math.abs(n)), msg: 'Attenzione ai segni: sottrarre un numero negativo equivale a sommarlo.' });
+    bugs.push({ node: mkPow(base, m * n), msg: 'Nel quoziente gli esponenti si sottraggono, non si moltiplicano.' });
+  }
+  return {
+    id: mul ? 'sameBaseMul' : 'sameBaseDiv',
+    name: mul ? 'Prodotto di potenze con la stessa base' : 'Quoziente di potenze con la stessa base',
+    explain: mul ? 'Si lascia la base e si <b>sommano</b> gli esponenti: aᵐ · aⁿ = aᵐ⁺ⁿ.' : 'Si lascia la base e si <b>sottraggono</b> gli esponenti: aᵐ : aⁿ = aᵐ⁻ⁿ.',
+    out: mkPow(base, k), bugs
+  };
+};
+
+R.powPow = (node) => {
+  const base = node.b.b.v, m = node.b.e, n = node.e, k = m * n;
+  const bugs = [
+    { node: mkPow(base, m + n), msg: 'Nella potenza di potenza gli esponenti si <b>moltiplicano</b>, non si sommano.' },
+    { node: mkPow(base, -k), msg: 'Attenzione alla regola dei segni nel prodotto degli esponenti.' },
+    { node: mkPow(base.inv(), k), msg: 'La base non va invertita: si moltiplicano solo gli esponenti.' },
+  ];
+  if (m !== n) bugs.push({ node: mkPow(base, m - n), msg: 'Nella potenza di potenza gli esponenti si moltiplicano.' });
+  return { id: 'powPow', name: 'Potenza di potenza', explain: 'Si lascia la base e si <b>moltiplicano</b> gli esponenti: (aᵐ)ⁿ = aᵐ·ⁿ.', out: mkPow(base, k), bugs };
+};
+
+// riscrive x = (1/a)^e come a^(-e) per avere la stessa base dell'altro fattore
+R.alignBase = (x, target) => {
+  const { exp } = asPow(x);
+  return {
+    id: 'align', name: 'Basi reciproche',
+    explain: 'Una base è il reciproco dell’altra: si inverte la base e si cambia segno all’esponente, così le basi diventano uguali.',
+    out: mkPow(target, -exp),
+    bugs: [
+      { node: mkPow(target, exp), msg: 'Se inverti la base devi anche <b>cambiare segno</b> all’esponente.' },
+      { node: P(N(target.neg()), -exp), msg: 'Il reciproco di una frazione si ottiene scambiando numeratore e denominatore, non cambiando segno.' },
+      { node: P(N(target.neg()), exp), msg: 'Il reciproco non si ottiene cambiando segno alla base.' },
+    ]
+  };
+};
+
+R.computePow = (x) => {
+  const a = x.b.v, e = x.e;
+  if (e === 0) return {
+    id: 'zero', name: 'Esponente zero', explain: 'Ogni numero diverso da zero elevato a 0 vale 1.',
+    out: N('1'), bugs: [
+      { node: N('0'), msg: 'Una potenza con esponente 0 vale <b>1</b>, non 0.' },
+      { node: N(a), msg: 'Una potenza con esponente 0 vale <b>1</b>, non la base.' },
+      { node: N('-1'), msg: 'Una potenza con esponente 0 vale <b>1</b>.' },
+    ]
+  };
+  if (e < 0) return {
+    id: 'neg', name: 'Esponente negativo',
+    explain: 'Si inverte la base e l’esponente diventa positivo: a⁻ⁿ = (1/a)ⁿ.',
+    out: mkPow(a.inv(), -e), bugs: [
+      { node: mkPow(a, -e), msg: 'Con l’esponente negativo bisogna anche <b>invertire la base</b>.' },
+      { node: P(N(a.inv()), e), msg: 'Dopo aver invertito la base l’esponente diventa <b>positivo</b>.' },
+      { node: P(N(a.neg()), -e), msg: 'Esponente negativo non vuol dire base negativa: la base si <b>inverte</b>.' },
+      { node: N(a.pow(-e).neg()), msg: 'Un esponente negativo non rende negativo il risultato: si inverte la base.' },
+    ]
+  };
+  const bugs = [];
+  if (a.d !== 1n) bugs.push({ node: N(new Fr(a.n ** BigInt(e), a.d)), msg: 'La potenza si applica sia al <b>numeratore</b> sia al <b>denominatore</b>.' });
+  if (a.d !== 1n) bugs.push({ node: N(new Fr(a.n, a.d ** BigInt(e))), msg: 'La potenza si applica sia al <b>numeratore</b> sia al <b>denominatore</b>.' });
+  bugs.push({ node: N(new Fr(a.n * BigInt(e), a.d)), msg: 'Elevare a potenza non vuol dire moltiplicare per l’esponente.' });
+  if (a.d !== 1n) bugs.push({ node: N(new Fr(a.n * BigInt(e), a.d * BigInt(e))), msg: 'Elevare a potenza non vuol dire moltiplicare numeratore e denominatore per l’esponente.' });
+  if (a.isNeg()) bugs.push({ node: N(a.pow(e).neg()), msg: e % 2 === 0 ? 'Base negativa con esponente <b>pari</b>: il risultato è positivo.' : 'Base negativa con esponente <b>dispari</b>: il risultato è negativo.' });
+  bugs.push({ node: N(a.pow(e + 1)), msg: 'Controlla quante volte va moltiplicata la base.' });
+  return { id: 'calc', name: 'Calcolo della potenza', explain: 'Si elevano all’esponente sia il numeratore sia il denominatore: (a/b)ⁿ = aⁿ/bⁿ.', out: N(a.pow(e)), bugs };
+};
+
+R.sameExp = (node) => {
+  const a = node.l.b.v, b = node.r.b.v, e = node.l.e, mul = node.op === '*';
+  const bugs = [
+    { node: P(B('+', N(a), N(b)), e), msg: 'Con lo stesso esponente le basi si ' + (mul ? 'moltiplicano' : 'dividono') + ', non si sommano.' },
+  ];
+  if (mul) {
+    bugs.push({ node: P(B('*', N(a), N(b)), 2 * e), msg: 'L’esponente resta lo stesso: non si sommano gli esponenti.' });
+    bugs.push({ node: P(B('*', N(a), N(b)), e * e), msg: 'L’esponente resta lo stesso: non si moltiplicano gli esponenti.' });
+  } else {
+    bugs.push({ node: P(B('*', N(a), N(b)), e), msg: 'Nel quoziente le basi si <b>dividono</b>.' });
+    bugs.push({ node: P(B(':', N(b), N(a)), e), msg: 'Rispetta l’ordine: dividendo diviso divisore.' });
+    bugs.push({ node: P(B(':', N(a), N(b)), 2 * e), msg: 'L’esponente resta lo stesso.' });
+  }
+  return {
+    id: mul ? 'sameExpMul' : 'sameExpDiv',
+    name: mul ? 'Prodotto di potenze con lo stesso esponente' : 'Quoziente di potenze con lo stesso esponente',
+    explain: mul ? 'Si moltiplicano le basi e si lascia l’esponente: aⁿ · bⁿ = (a · b)ⁿ.' : 'Si dividono le basi e si lascia l’esponente: aⁿ : bⁿ = (a : b)ⁿ.',
+    out: P(B(node.op, N(a), N(b)), e), bugs
+  };
+};
+
+// fattore con esponente zero dentro un prodotto/quoziente: X · a⁰ = X
+R.zeroFactor = (node, side) => {
+  const other = side === 'l' ? node.r : node.l, z = node[side];
+  const bugs = [{ node: B(node.op, side === 'l' ? N(z.b.v) : other, side === 'l' ? other : N(z.b.v)), msg: 'Una potenza con esponente 0 vale <b>1</b>, non la base.' }];
+  if (node.op === '*') bugs.push({ node: N('0'), msg: 'Una potenza con esponente 0 vale <b>1</b>, quindi il prodotto non si annulla.' });
+  bugs.push({ node: B(node.op, side === 'l' ? N('0') : other, side === 'l' ? other : N('0')), msg: 'Una potenza con esponente 0 vale <b>1</b>, non 0.' });
+  return { id: 'zeroFactor', name: 'Esponente zero', explain: 'a⁰ = 1, e moltiplicare o dividere per 1 non cambia nulla.', out: other, bugs };
+};
+
+R.identity = (node, side) => {
+  const other = side === 'l' ? node.r : node.l;
+  return { id: 'one', name: 'Moltiplicare per 1', explain: 'Moltiplicare o dividere per 1 non cambia il valore.', out: other, bugs: [{ node: N('1'), msg: 'Moltiplicare per 1 lascia il numero invariato.' }, { node: N('0'), msg: 'Moltiplicare per 1 lascia il numero invariato.' }] };
+};
+
+R.arith = (node) => {
+  const a = node.l.v, b = node.r.v, op = node.op;
+  const L = (x, y) => x * y / bgcd(x, y);
+  const bugs = [];
+  let out, id, name, explain;
+  if (op === '+' || op === '-') {
+    const s = op === '+' ? 1n : -1n;
+    out = op === '+' ? a.add(b) : a.sub(b);
+    id = op === '+' ? 'sum' : 'diff';
+    name = op === '+' ? 'Somma di frazioni' : 'Differenza di frazioni';
+    explain = 'Si trova il denominatore comune (m.c.m.), si trasformano i numeratori e si ' + (op === '+' ? 'sommano' : 'sottraggono') + '.';
+    if (a.d + s * b.d !== 0n) bugs.push({ node: N(new Fr(a.n + s * b.n, a.d + b.d)), msg: 'I denominatori non si ' + (op === '+' ? 'sommano' : 'sottraggono') + ': serve il <b>denominatore comune</b>.' });
+    bugs.push({ node: N(new Fr(a.n + s * b.n, L(a.d, b.d))), msg: 'Dopo aver trovato il m.c.m. bisogna trasformare anche i <b>numeratori</b>.' });
+    bugs.push({ node: N(op === '+' ? a.sub(b) : a.add(b)), msg: 'Attenzione al segno dell’operazione.' });
+    if (op === '-') bugs.push({ node: N(b.sub(a)), msg: 'Attenzione all’ordine della sottrazione.' });
+    bugs.push({ node: N(new Fr(a.n * b.d + s * b.n * a.d, a.d * b.d + 1n)), msg: 'Controlla il denominatore comune.' });
+  } else if (op === '*') {
+    out = a.mul(b); id = 'mul'; name = 'Prodotto di frazioni';
+    explain = 'Si moltiplicano i numeratori tra loro e i denominatori tra loro (semplificando quando possibile).';
+    if (!b.isZero()) bugs.push({ node: N(a.div(b)), msg: 'Qui c’è un prodotto, non una divisione: non bisogna invertire.' });
+    bugs.push({ node: N(new Fr(a.n * b.n, a.d)), msg: 'Anche i <b>denominatori</b> vanno moltiplicati.' });
+    if (a.d + b.d !== 0n) bugs.push({ node: N(new Fr(a.n * b.n, a.d + b.d)), msg: 'I denominatori si moltiplicano, non si sommano.' });
+    bugs.push({ node: N(a.add(b)), msg: 'Qui c’è un prodotto, non una somma.' });
+  } else {
+    out = a.div(b); id = 'div'; name = 'Quoziente di frazioni';
+    explain = 'Si moltiplica la prima frazione per il <b>reciproco</b> della seconda.';
+    bugs.push({ node: N(a.mul(b)), msg: 'Per dividere si moltiplica per il <b>reciproco</b> del divisore.' });
+    bugs.push({ node: N(b.div(a)), msg: 'Si inverte il divisore (la seconda frazione), non la prima.' });
+    if (!a.isZero()) bugs.push({ node: N(a.inv().mul(b.inv())), msg: 'Si inverte solo il divisore.' });
+  }
+  return { id, name, explain, out: N(out), bugs };
+};
+
+// ---------- Risolutore: trova i punti da trasformare (redex) ----------
+function redexes(node, path = []) {
+  if (node.t === 'n') return [];
+  if (node.t === 'p') {
+    if (!isSettled(node.b)) return redexes(node.b, [...path, 'b']);
+    if (node.b.t === 'p') return [{ path, rule: R.powPow(node) }];
+    return [];
+  }
+  const L = node.l, Rr = node.r, sl = isSettled(L), sr = isSettled(Rr);
+  if (!sl || !sr) {
+    const out = [];
+    if (!sl) out.push(...redexes(L, [...path, 'l']));
+    if (!sr) out.push(...redexes(Rr, [...path, 'r']));
+    return out;
+  }
+  const op = node.op;
+  if (op === '*' || op === ':') {
+    if (L.t === 'p' || Rr.t === 'p') {
+      const a = asPow(L), b = asPow(Rr);
+      if (a.base.eq(b.base)) return [{ path, rule: R.sameBase(node) }];
+      if (!b.base.isZero() && a.base.eq(b.base.inv())) return [{ path: [...path, 'r'], rule: R.alignBase(Rr, a.base) }];
+      if (Rr.t === 'p' && Rr.e === 0) return [{ path, rule: R.zeroFactor(node, 'r') }];
+      if (L.t === 'p' && L.e === 0 && op === '*') return [{ path, rule: R.zeroFactor(node, 'l') }];
+      if (Rr.t === 'n' && Rr.v.isOne()) return [{ path, rule: R.identity(node, 'r') }];
+      if (L.t === 'n' && L.v.isOne() && op === '*') return [{ path, rule: R.identity(node, 'l') }];
+      if (L.t === 'p' && Rr.t === 'p' && L.e === Rr.e) return [{ path, rule: R.sameExp(node) }];
+      const out = [];
+      if (L.t === 'p') out.push({ path: [...path, 'l'], rule: R.computePow(L) });
+      if (Rr.t === 'p') out.push({ path: [...path, 'r'], rule: R.computePow(Rr) });
+      return out;
+    }
+    return [{ path, rule: R.arith(node) }];
+  }
+  const out = [];
+  if (L.t === 'p') out.push({ path: [...path, 'l'], rule: R.computePow(L) });
+  if (Rr.t === 'p') out.push({ path: [...path, 'r'], rule: R.computePow(Rr) });
+  if (out.length) return out;
+  return [{ path, rule: R.arith(node) }];
+}
+
+function findStep(tree) {
+  if (tree.t === 'n') return null;
+  if (tree.t === 'p' && tree.b.t === 'n') return [{ path: [], rule: R.computePow(tree) }];
+  return redexes(tree);
+}
+
+function applyRedexes(tree, list, overrides = {}) {
+  let t = tree;
+  list.forEach((r, i) => { t = setAt(t, r.path, overrides[i] !== undefined ? overrides[i] : r.rule.out); });
+  return t;
+}
+
+// soluzione completa: lista di passi
+function solve(tree, maxSteps = 40) {
+  const steps = []; let cur = tree;
+  while (cur.t !== 'n') {
+    const rx = findStep(cur);
+    if (!rx || !rx.length) throw new Error('stuck');
+    const next = applyRedexes(cur, rx);
+    steps.push({ from: cur, to: next, redexes: rx });
+    cur = next;
+    if (steps.length > maxSteps) throw new Error('too many steps');
+  }
+  return { steps, result: cur.v };
+}
+
+// ---------- Scelte multiple ----------
+function perturb(node, rnd) {
+  // piccola modifica numerica del risultato corretto (ripiego)
+  if (node.t === 'p') { const d = rnd() < 0.5 ? 1 : -1; return { ...node, e: node.e + d === 0 ? node.e + 2 * d : node.e + d }; }
+  if (node.t === 'n') {
+    const v = node.v, c = Math.floor(rnd() * 3);
+    if (c === 0) return N(new Fr(v.n + 1n, v.d));
+    if (c === 1 && !v.isZero()) return N(v.inv());
+    return N(new Fr(v.n, v.d + 1n));
+  }
+  if (node.t === 'b') return { ...node, l: perturb(node.l, rnd) };
+  return node;
+}
+
+function shuffle(a, rnd) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function buildChoices(step, rnd = Math.random) {
+  const cur = step.from, val = evalNode(cur), correct = step.to;
+  const seen = new Set([toText(correct)]);
+  const cands = [];
+  step.redexes.forEach((r, i) => r.rule.bugs.forEach(b => cands.push({ i, node: b.node, msg: b.msg })));
+  shuffle(cands, rnd);
+  const wrong = [];
+  const tryAdd = (tree, msg) => {
+    const k = toText(tree); if (seen.has(k)) return;
+    let v; try { v = evalNode(tree); } catch (e) { return; }
+    if (v.eq(val)) return;               // un distrattore DEVE cambiare il valore
+    if (v.size() > 10n ** 60n) return;
+    seen.add(k); wrong.push({ node: tree, msg });
+  };
+  // preferisci errori su redex diversi per varietà
+  for (const c of cands) { if (wrong.length >= 3) break; tryAdd(applyRedexes(cur, step.redexes, { [c.i]: c.node }), c.msg); }
+  let guard = 0;
+  while (wrong.length < 3 && guard++ < 60) {
+    const i = Math.floor(rnd() * step.redexes.length);
+    tryAdd(applyRedexes(cur, step.redexes, { [i]: perturb(step.redexes[i].rule.out, rnd) }), 'Controlla i calcoli: il valore dell’espressione è cambiato.');
+  }
+  const opts = [{ node: correct, correct: true }, ...wrong.map(w => ({ node: w.node, correct: false, msg: w.msg }))];
+  return shuffle(opts, rnd);
+}
+
+// ---------- Rendering MathML ----------
+const BR = [['(', ')'], ['(', ')'], ['[', ']'], ['{', '}']];
+function brackets(inner, lvl) { const [o, c] = BR[Math.min(lvl, 3)]; return `<mo fence="true" stretchy="true">${o}</mo>${inner}<mo fence="true" stretchy="true">${c}</mo>`; }
+function numML(v) {
+  const neg = v.isNeg(), a = v.abs();
+  const core = a.d === 1n ? `<mn>${a.n}</mn>` : `<mfrac><mn>${a.n}</mn><mn>${a.d}</mn></mfrac>`;
+  return neg ? `<mo form="prefix">−</mo>${core}` : core;
+}
+// restituisce { s: stringa, lvl: livello massimo di parentesi usato }
+function ml(x) {
+  if (x.t === 'n') return { s: numML(x.v), lvl: 0 };
+  if (x.t === 'p') {
+    let base;
+    if (x.b.t === 'n') {
+      const v = x.b.v;
+      base = (v.d !== 1n || v.isNeg()) ? { s: brackets(numML(v), 1), lvl: 1 } : { s: numML(v), lvl: 0 };
+    } else { const r = ml(x.b); base = { s: brackets(r.s, r.lvl + 1), lvl: r.lvl + 1 }; }
+    const es = x.e < 0 ? `<mrow><mo form="prefix">−</mo><mn>${-x.e}</mn></mrow>` : `<mn>${x.e}</mn>`;
+    return { s: `<msup><mrow>${base.s}</mrow>${es}</msup>`, lvl: base.lvl };
+  }
+  const p = PREC[x.op];
+  const side = (c, right) => {
+    const r = ml(c);
+    let need = false;
+    if (c.t === 'b') need = PREC[c.op] < p || (right && PREC[c.op] === p);
+    if (c.t === 'n' && c.v.isNeg() && right) return { s: brackets(r.s, 1), lvl: Math.max(1, r.lvl) };
+    if (need) return { s: brackets(r.s, r.lvl + 1), lvl: r.lvl + 1 };
+    return r;
+  };
+  const l = side(x.l, false), r = side(x.r, true);
+  return { s: `<mrow>${l.s}<mo>${OPTXT[x.op]}</mo>${r.s}</mrow>`, lvl: Math.max(l.lvl, r.lvl) };
+}
+const bracketLevel = x => ml(x).lvl;
+const toMathML = x => `<math display="block" displaystyle="true"><mrow>${ml(x).s}</mrow></math>`;
+// testo leggibile (per test e accessibilità)
+function pretty(x) {
+  const BRt = [['(', ')'], ['(', ')'], ['[', ']'], ['{', '}']];
+  const br = (s, l) => BRt[Math.min(l, 3)][0] + s + BRt[Math.min(l, 3)][1];
+  function go(x) {
+    if (x.t === 'n') return { s: x.v.key().replace('-', '−'), lvl: 0 };
+    if (x.t === 'p') {
+      let b;
+      if (x.b.t === 'n') { const v = x.b.v; b = (v.d !== 1n || v.isNeg()) ? { s: br(go(x.b).s, 1), lvl: 1 } : go(x.b); }
+      else { const r = go(x.b); b = { s: br(r.s, r.lvl + 1), lvl: r.lvl + 1 }; }
+      return { s: `${b.s}^${x.e}`, lvl: b.lvl };
+    }
+    const p = PREC[x.op];
+    const side = (c, right) => { const r = go(c); if (c.t === 'n' && c.v.isNeg() && right) return { s: br(r.s, 1), lvl: 1 }; if (c.t === 'b' && (PREC[c.op] < p || (right && PREC[c.op] === p))) return { s: br(r.s, r.lvl + 1), lvl: r.lvl + 1 }; return r; };
+    const l = side(x.l, false), r = side(x.r, true);
+    return { s: `${l.s} ${OPTXT[x.op]} ${r.s}`, lvl: Math.max(l.lvl, r.lvl) };
+  }
+  return go(x).s;
+}
+
+if (typeof module !== 'undefined') module.exports = { Fr, N, P, B, mkPow, evalNode, toText, solve, findStep, buildChoices, toMathML, bracketLevel, pretty, getAt, setAt, shuffle };
+
+</script>
+<script>
+// ================= GENERATORE "ALL'INDIETRO" =================
+// Parte da un risultato semplice e lo complica con trasformazioni inverse
+// alle regole del risolutore. Poi verifica con il risolutore stesso.
+
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+const BASES = ['1/2', '1/3', '2/3', '3/2', '2', '3', '3/4', '4/3', '2/5', '5/2', '1/4', '4', '1/5', '5', '3/5', '5/3'].map(s => Fr.parse(s));
+
+const LEVELS = [null,
+  { title: 'Stessa base', desc: 'Prodotto e quoziente di potenze con la stessa base, esponenti positivi.', n: [1, 1], exp: [1, 7], neg: false, ops: { sbm: 1, sbd: 1 }, fin: [2, 3], steps: [2, 2], br: [0, 1] },
+  { title: 'Esponenti negativi', desc: 'Compaiono esponenti negativi: attenzione ai segni.', n: [1, 2], exp: [-5, 6], neg: true, ops: { sbm: 1, sbd: 1 }, fin: [-3, 3], steps: [2, 4], br: [0, 1] },
+  { title: 'Potenza di potenza', desc: 'Potenze di potenze, basi reciproche ed esponente zero.', n: [2, 2], exp: [-5, 6], neg: true, ops: { sbm: 1, sbd: 1, pp: 1.4, inv: 0.8, zero: 0.3 }, fin: [-3, 3], steps: [3, 5], br: [1, 2] },
+  { title: 'Stesso esponente', desc: 'Prodotti e quozienti con lo stesso esponente e basi diverse.', n: [2, 3], exp: [-5, 6], neg: true, ops: { sbm: 1, sbd: 1, pp: 1, inv: 0.6, se: 1.3, zero: 0.2 }, fin: [-3, 3], steps: [3, 6], br: [1, 2] },
+  { title: 'Parentesi tonde e quadre', desc: 'Più proprietà insieme, con parentesi annidate.', n: [3, 3], exp: [-6, 6], neg: true, ops: { sbm: 1, sbd: 1, pp: 1.3, inv: 0.6, se: 0.8, zero: 0.3 }, fin: [-3, 3], steps: [4, 7], br: [2, 2] },
+  { title: 'Somme e differenze', desc: 'Dentro le parentesi compaiono somme e differenze di frazioni.', n: [3, 4], exp: [-5, 6], neg: true, ops: { sbm: 1, sbd: 1, pp: 1, inv: 0.5, se: 0.6, sum: 1.4, zero: 0.2 }, fin: [-3, 3], steps: [4, 8], br: [1, 2], sumTarget: 0.35 },
+  { title: 'Espressioni miste', desc: 'Tutte le operazioni, parentesi tonde e quadre.', n: [4, 5], exp: [-6, 7], neg: true, ops: { sbm: 1, sbd: 1, pp: 1.2, inv: 0.6, se: 0.7, sum: 1, zero: 0.3 }, fin: [-3, 3], steps: [5, 9], br: [2, 2], sumTarget: 0.4 },
+  { title: 'Basi negative', desc: 'Basi negative: esponente pari o dispari fa la differenza.', n: [4, 5], exp: [-6, 7], neg: true, negBase: true, ops: { sbm: 1, sbd: 1, pp: 1.2, inv: 0.6, se: 0.7, sum: 0.6, zero: 0.3 }, fin: [-3, 3], steps: [5, 9], br: [2, 2], sumTarget: 0.3 },
+  { title: 'Graffe', desc: 'Parentesi tonde, quadre e graffe.', n: [5, 6], exp: [-6, 7], neg: true, negBase: true, ops: { sbm: 1, sbd: 1, pp: 1.6, inv: 0.6, se: 0.7, sum: 0.8, zero: 0.3 }, fin: [-3, 3], steps: [6, 11], br: [3, 3], sumTarget: 0.3 },
+  { title: 'Campione', desc: 'Le espressioni più lunghe: tutte le regole insieme.', n: [6, 7], exp: [-7, 7], neg: true, negBase: true, ops: { sbm: 1, sbd: 1, pp: 1.6, inv: 0.6, se: 0.8, sum: 1, zero: 0.3 }, fin: [-3, 3], steps: [7, 14], br: [3, 3], sumTarget: 0.35 },
+];
+
+const ri = (rnd, lo, hi) => lo + Math.floor(rnd() * (hi - lo + 1));
+const pick = (rnd, arr) => arr[Math.floor(rnd() * arr.length)];
+const nice = (f, m = 6) => f.abs().n <= BigInt(m) && f.d <= BigInt(m);
+
+function leaves(x, path = [], out = []) {
+  if (x.t === 'p' && x.b.t === 'n') { if (x.e !== 0) out.push(path); return out; }
+  if (x.t === 'p') return leaves(x.b, [...path, 'b'], out);
+  if (x.t === 'b') { leaves(x.l, [...path, 'l'], out); leaves(x.r, [...path, 'r'], out); }
+  return out;
+}
+
+function randExp(rnd, cfg, avoid = []) {
+  for (let i = 0; i < 30; i++) {
+    const e = ri(rnd, cfg.neg ? cfg.exp[0] : 1, cfg.exp[1]);
+    if (e !== 0 && !avoid.includes(e)) return e;
+  }
+  return 2;
+}
+
+function splitSum(rnd, Bv) {
+  if (Bv.isNeg()) return null;
+  for (let i = 0; i < 60; i++) {
+    const op = rnd() < 0.55 ? '+' : '-';
+    const q = pick(rnd, [2, 3, 4, 5, 6, 8, 9, 10, 12]);
+    const x = new Fr(ri(rnd, 1, 2 * q), q);
+    const y = op === '+' ? Bv.sub(x) : x.sub(Bv);
+    if (y.isNeg() || y.isZero() || x.eq(y)) continue;
+    if (y.d > 12n || y.n > 15n || x.d === 1n && y.d === 1n) continue;
+    return B(op, N(x), N(y));
+  }
+  return null;
+}
+
+// applica un'espansione a una foglia aᵉ; restituisce il nuovo sottoalbero o null
+function expand(rnd, cfg, leaf, op) {
+  const base = leaf.b.v, e = leaf.e, lim = Math.max(Math.abs(cfg.exp[0]), cfg.exp[1]);
+  const okE = k => Math.abs(k) <= lim && (cfg.neg || k > 0);
+  switch (op) {
+    case 'sbm': { const a = randExp(rnd, cfg, [e]); const b = e - a; if (b === 0 || !okE(b)) return null; return B('*', P(N(base), a), P(N(base), b)); }
+    case 'sbd': { const a = randExp(rnd, cfg, [e]); const b = a - e; if (b === 0 || !okE(b)) return null; return B(':', P(N(base), a), P(N(base), b)); }
+    case 'pp': {
+      const ks = shuffleArr(rnd, cfg.neg ? [2, 3, -1, -2, 2, 3] : [2, 3]);
+      for (const k of ks) { if (e % k) continue; const a = e / k; if (Math.abs(a) < 2 && !(a === -1 && cfg.neg)) continue; if (!okE(a)) continue; return P(P(N(base), a), k); }
+      return null;
+    }
+    case 'inv': { if (!cfg.neg || base.isOne()) return null; return P(N(base.inv()), -e); }
+    case 'se': {
+      if (Math.abs(e) < 2 || Math.abs(e) > 4) return null;
+      for (let i = 0; i < 30; i++) {
+        let b1 = pick(rnd, BASES); if (cfg.negBase && rnd() < 0.3) b1 = b1.neg();
+        if (rnd() < 0.5) { const b2 = base.div(b1); if (nice(b2) && !b2.abs().isOne() && !b2.eq(b1) && !b2.eq(b1.inv())) return B('*', P(N(b1), e), P(N(b2), e)); }
+        else { const b2 = b1, a1 = base.mul(b2); if (nice(a1) && !a1.abs().isOne() && !a1.eq(b2) && !a1.eq(b2.inv())) return B(':', P(N(a1), e), P(N(b2), e)); }
+      }
+      return null;
+    }
+    case 'sum': { const s = splitSum(rnd, base); if (!s) return null; return e === 1 ? s : P(s, e); }
+    case 'zero': {
+      let c; for (let i = 0; i < 10; i++) { c = pick(rnd, BASES); if (!c.eq(base) && !c.eq(base.inv())) break; }
+      return rnd() < 0.5 ? B('*', leaf, P(N(c), 0)) : B(':', leaf, P(N(c), 0));
+    }
+  }
+  return null;
+}
+function shuffleArr(rnd, a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function weightedOps(rnd, ops) {
+  const list = Object.entries(ops), out = [];
+  const pool = list.slice();
+  while (pool.length) { const tot = pool.reduce((s, [, w]) => s + w, 0); let r = rnd() * tot; let i = 0; for (; i < pool.length; i++) { r -= pool[i][1]; if (r <= 0) break; } i = Math.min(i, pool.length - 1); out.push(pool[i][0]); pool.splice(i, 1); }
+  return out;
+}
+
+function cleanup(x) {
+  if (x.t === 'n') return x;
+  if (x.t === 'p') { const b = cleanup(x.b); if (b.t === 'n' && x.e === 1) return b; return { ...x, b }; }
+  return { ...x, l: cleanup(x.l), r: cleanup(x.r) };
+}
+
+function pickTarget(rnd, cfg) {
+  const fin = () => { for (let i = 0; i < 50; i++) { let b = pick(rnd, BASES); if (cfg.negBase && rnd() < 0.5) b = b.neg(); const e = ri(rnd, cfg.fin[0], cfg.fin[1]); if (e === 0 || (!cfg.neg && e < 0) || e === 1) continue; const v = b.pow(e); if (v.size() <= 125n) return P(N(b), e); } return P(N('2/3'), 2); };
+  if (cfg.sumTarget && rnd() < cfg.sumTarget) {
+    for (let i = 0; i < 50; i++) {
+      const a = fin(), b = fin(), op = rnd() < 0.5 ? '+' : '-';
+      const va = evalNode(a), vb = evalNode(b);
+      const v = op === '+' ? va.add(vb) : va.sub(vb);
+      if (v.isZero() || v.d > 200n || v.abs().n > 200n) continue;
+      if (va.size() > 30n || vb.size() > 30n) continue;
+      return B(op, a, b);
+    }
+  }
+  return fin();
+}
+
+function tooBig(tree) {
+  let bad = false;
+  (function w(x) { if (bad) return; if (x.t === 'n') { if (x.v.size() > 3000n) bad = true; return; } if (x.t === 'p') { if (Math.abs(x.e) > 14) bad = true; w(x.b); return; } w(x.l); w(x.r); })(tree);
+  return bad;
+}
+
+function generate(level, seed) {
+  const cfg = LEVELS[level];
+  const rnd = mulberry32(seed >>> 0);
+  for (let attempt = 0; attempt < 800; attempt++) {
+    let tree = pickTarget(rnd, cfg);
+    const target = evalNode(tree);
+    const nExp = ri(rnd, cfg.n[0], cfg.n[1]);
+    let done = 0;
+    for (let t = 0; t < 40 && done < nExp; t++) {
+      const ls = leaves(tree); if (!ls.length) break;
+      const path = pick(rnd, ls); const leaf = E_get(tree, path);
+      let applied = false;
+      for (const op of weightedOps(rnd, cfg.ops)) {
+        const nx = expand(rnd, cfg, leaf, op);
+        if (nx) { tree = E_set(tree, path, nx); applied = true; break; }
+      }
+      if (applied) done++;
+    }
+    tree = cleanup(tree);
+    if (tree.t === 'n') continue;
+    const bl = bracketLevel(tree);
+    if (bl < cfg.br[0] || bl > cfg.br[1]) continue;
+    let sol;
+    try { sol = solve(tree); } catch (e) { continue; }
+    if (!sol.result.eq(target)) continue;
+    if (sol.steps.length < cfg.steps[0] || sol.steps.length > cfg.steps[1]) continue;
+    if (sol.steps.some(s => tooBig(s.to)) || tooBig(tree)) continue;
+    if (sol.result.size() > 2000n) continue;
+    return { tree, solution: sol, level, seed };
+  }
+  return null;
+}
+function E_get(t, p) { let x = t; for (const k of p) x = x[k]; return x; }
+function E_set(t, p, v) { if (!p.length) return v; const [k, ...r] = p; return { ...t, [k]: E_set(t[k], r, v) }; }
+
+if (typeof module !== 'undefined') module.exports = { generate, LEVELS, mulberry32 };
+
+</script>
+<script>
+// ================= INTERFACCIA =================
+// >>> Parola segreta dei certificati: cambiala prima di pubblicare il gioco. <<<
+// Se la cambi, i certificati già rilasciati non risultano più validi.
+const CERT_SECRET = 'cambia-questa-parola-segreta';
+const ARCADE_EXERCISES = 3;   // esercizi senza errori per superare un livello in Arcade
+
+// ---------- Certificati ----------
+function normName(s) { return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+function fnv(str) { let h = 0x811c9dc5; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h >>> 0; }
+function certCheck(name, level, serial) {
+  // due passate di hash per mescolare bene le cifre
+  const h = fnv(`${CERT_SECRET}|${normName(name)}|${level}|${serial}`);
+  return String(fnv(h.toString(36) + CERT_SECRET) % 10000).padStart(4, '0');
+}
+function makeCert(name, level) {
+  const serial = String(1000 + Math.floor(Math.random() * 9000));
+  return `L${level}-${serial}-${certCheck(name, level, serial)}`;
+}
+function verifyCert(name, code) {
+  const m = String(code).trim().toUpperCase().replace(/\s+/g, '').match(/^L(\d{1,2})-(\d{4})-(\d{4})$/);
+  if (!m) return { ok: false, why: 'Formato non valido (es. L3-4821-0937).' };
+  const lv = +m[1]; if (lv < 1 || lv > 10) return { ok: false, why: 'Livello inesistente.' };
+  if (!normName(name)) return { ok: false, why: 'Scrivi il nome dello studente.' };
+  return certCheck(name, lv, m[2]) === m[3] ? { ok: true, level: lv } : { ok: false, why: 'Il codice non corrisponde a questo nome.' };
+}
+
+(function () {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const NEED = 3;
+  const store = {
+    get() { try { return JSON.parse(localStorage.getItem('potenze-v1')) || null; } catch (e) { return null; } },
+    set(v) { try { localStorage.setItem('potenze-v1', JSON.stringify(v)); } catch (e) { } }
+  };
+  const S = Object.assign({ mode: 'train', level: 1, score: 0, streak: 0, done: 0, perfect: {} }, store.get() || {});
+  S.arc = Object.assign({ name: '', level: 1, progress: 0, certs: {}, dates: {} }, S.arc || {});
+  const save = () => store.set(S);
+  const arcade = () => S.mode === 'arcade';
+  const curLevel = () => arcade() ? Math.min(S.arc.level, 10) : S.level;
+
+  let G = null, k = 0, choices = [], answered = false, errors = 0, hints = 0, rnd = Math.random;
+
+  // ---------- posizione della risposta giusta: "mazzo" bilanciato ----------
+  const crand = () => { try { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; } catch (e) { return Math.random(); } };
+  let bag = [], lastPos = -1;
+  function nextPos() {
+    if (!bag.length) { bag = shuffle([0, 1, 2, 3], crand); if (bag[0] === lastPos) bag.push(bag.shift()); }
+    lastPos = bag.shift(); return lastPos;
+  }
+  function placeCorrect(opts) {
+    const wrong = shuffle(opts.filter(o => !o.correct), crand), right = opts.find(o => o.correct);
+    const pos = nextPos(); wrong.splice(pos, 0, right); return wrong;
+  }
+
+  // ---------- intestazione ----------
+  function renderMode() {
+    document.body.classList.toggle('arcade', arcade());
+    $('mTrain').classList.toggle('on', !arcade()); $('mArc').classList.toggle('on', arcade());
+    $('hintBtn').style.display = arcade() ? 'none' : '';
+    $('skipBtn').style.display = arcade() ? 'none' : '';
+    if (arcade()) {
+      const finished = S.arc.level > 10;
+      const pips = Array.from({ length: ARCADE_EXERCISES }, (_, j) => `<i class="${j < S.arc.progress ? 'f' : ''}"></i>`).join('');
+      $('arcInfo').innerHTML = finished
+        ? `<b>${esc(S.arc.name)}</b> · hai completato tutti i 10 livelli!`
+        : `<b>${esc(S.arc.name)}</b> · Livello ${S.arc.level}: ${ARCADE_EXERCISES} esercizi di fila senza errori <span class="pips">${pips}</span>`;
+    } else $('arcInfo').innerHTML = 'Allenamento libero: scegli il livello che vuoi, con suggerimenti.';
+  }
+
+  function renderLevels() {
+    const box = $('levels'); box.innerHTML = '';
+    for (let i = 1; i <= 10; i++) {
+      const b = document.createElement('button');
+      if (arcade()) {
+        const got = !!S.arc.certs[i], cur = i === S.arc.level;
+        b.className = 'lv' + (cur ? ' on' : '') + (got ? ' done' : '') + (!got && !cur ? ' lock' : '');
+        b.textContent = i;
+        b.disabled = !got && !cur;
+        b.title = got ? `Livello ${i}: certificato ottenuto` : cur ? `Livello ${i}: in corso` : `Livello ${i}: bloccato`;
+        b.onclick = () => { if (got) showCert(i, false); };
+      } else {
+        const p = Math.min(S.perfect[i] || 0, NEED);
+        b.className = 'lv' + (i === S.level ? ' on' : '') + (p >= NEED ? ' done' : '');
+        b.innerHTML = `${i}<span class="dots">${Array.from({ length: NEED }, (_, j) => `<i class="${j < p ? 'f' : ''}"></i>`).join('')}</span>`;
+        b.title = `Livello ${i}: ${LEVELS[i].title}`;
+        b.onclick = () => { S.level = i; save(); newExercise(); };
+      }
+      box.appendChild(b);
+    }
+    const L = LEVELS[curLevel()];
+    $('lvinfo').innerHTML = `<b>Livello ${curLevel()} · ${L.title}</b> — ${L.desc}`;
+    renderMode();
+  }
+
+  function renderStats() { $('sScore').textContent = S.score; $('sStreak').textContent = S.streak; $('sDone').textContent = S.done; }
+
+  function newExercise(seed) {
+    if (arcade() && S.arc.level > 10) { renderLevels(); showFinale(); return; }
+    if (seed === undefined) seed = Math.floor(crand() * 1e6);
+    const lv = curLevel();
+    if (arcade()) {
+      // abbandonare un esercizio arcade a metà (cambio modalità, ricarica pagina) azzera il livello
+      if (S.arc.open) S.arc.progress = 0;
+      S.arc.open = true; save();
+    }
+    G = generate(lv, seed) || generate(lv, seed + 1);
+    k = 0; errors = 0; hints = 0;
+    rnd = mulberry32(seed * 13 + 7);
+    $('code').textContent = `${lv}-${seed}`;
+    renderLevels(); renderStats(); renderStep();
+  }
+
+  function boardRow(node, cls, first) {
+    return `<div class="row ${cls}"><span class="eq">${first ? '' : '='}</span>${toMathML(node)}</div>`;
+  }
+  function renderBoard() {
+    const steps = G.solution.steps; let h = boardRow(G.tree, k === 0 ? 'cur' : 'old', true);
+    for (let i = 0; i < k; i++) h += boardRow(steps[i].to, i === steps.length - 1 ? 'res' : (i === k - 1 ? 'cur' : 'old'), false);
+    $('board').innerHTML = h;
+    $('stepInfo').textContent = k < steps.length ? `Passaggio ${k + 1} di ${steps.length}` : 'Risolto!';
+  }
+
+  function renderStep() {
+    renderBoard(); hideFb();
+    const steps = G.solution.steps;
+    if (k >= steps.length) return finish();
+    $('ask').textContent = 'Qual è il passaggio corretto?';
+    $('hintBtn').disabled = false;
+    answered = false;
+    choices = placeCorrect(buildChoices(steps[k], rnd));
+    const box = $('opts'); box.innerHTML = '';
+    choices.forEach((c, i) => {
+      const b = document.createElement('button');
+      b.className = 'opt';
+      b.innerHTML = `<span class="k">${'ABCD'[i]}</span>${toMathML(c.node)}`;
+      b.setAttribute('aria-label', `Opzione ${'ABCD'[i]}: ${pretty(c.node)}`);
+      b.onclick = () => choose(i);
+      box.appendChild(b);
+    });
+    box.style.display = '';
+  }
+
+  function ruleText(step) {
+    const seen = new Set(), parts = [];
+    step.redexes.forEach(r => { if (!seen.has(r.rule.id)) { seen.add(r.rule.id); parts.push(`<p><b>${r.rule.name}.</b> ${r.rule.explain}</p>`); } });
+    return parts.join('');
+  }
+  function showFb(type, html, btnText, onNext) {
+    $('fb').className = 'fb show ' + type;
+    $('fbIc').textContent = type === 'good' ? '✓' : type === 'bad' ? '✗' : type === 'star' ? '★' : '?';
+    if (type === 'star') $('fb').className = 'fb show good';
+    $('fbTxt').innerHTML = html;
+    const nb = $('nextBtn');
+    nb.style.display = btnText ? '' : 'none';
+    nb.onclick = onNext || next;
+    if (btnText) { nb.textContent = btnText; setTimeout(() => nb.focus({ preventScroll: true }), 30); }
+  }
+  function hideFb() { $('fb').className = 'fb'; }
+
+  function choose(i) {
+    if (answered) return;
+    answered = true;
+    const step = G.solution.steps[k], c = choices[i];
+    const btns = [...$('opts').children];
+    btns.forEach((b, j) => { b.disabled = true; if (choices[j].correct) b.classList.add('ok'); else if (j !== i) b.classList.add('dim'); });
+    $('hintBtn').disabled = true;
+    const last = k === G.solution.steps.length - 1;
+    if (c.correct) {
+      S.score += 10; S.streak += 1;
+      showFb('good', `<h3>Giusto!</h3>${ruleText(step)}`, last ? 'Vedi il risultato →' : 'Avanti →');
+    } else {
+      btns[i].classList.add('ko'); errors++; S.streak = 0;
+      if (arcade()) {
+        S.arc.progress = 0; S.arc.open = false; // l'errore azzera subito il livello (salvato prima di ricaricare la pagina)
+        showFb('bad', `<h3>Errore: il livello ricomincia.</h3><p>${c.msg}</p><p style="margin-top:8px;color:var(--ink-soft)">Il passaggio giusto è quello in verde:</p>${ruleText(step)}`, 'Ricomincia il livello ↻', () => newExercise());
+      } else {
+        showFb('bad', `<h3>Non è questo.</h3><p>${c.msg}</p><p style="margin-top:8px;color:var(--ink-soft)">Il passaggio giusto è quello in verde:</p>${ruleText(step)}`, last ? 'Vedi il risultato →' : 'Avanti →');
+      }
+    }
+    renderStats(); renderMode(); save();
+  }
+
+  function next() { if (!answered) return; k++; renderStep(); }
+
+  function resultText() { const r = G.solution.result; return (r.d === 1n ? `${r.n}` : `${r.n}/${r.d}`).replace('-', '−'); }
+
+  function finish() {
+    $('opts').style.display = 'none';
+    $('hintBtn').disabled = true;
+    $('ask').textContent = 'Esercizio completato';
+    S.done++;
+    const perfect = errors === 0 && hints === 0;
+    if (arcade()) return finishArcade(perfect);
+    let bonus = 0;
+    if (perfect) { bonus = 5 * S.level; S.score += bonus; S.perfect[S.level] = (S.perfect[S.level] || 0) + 1; }
+    const p = S.perfect[S.level] || 0;
+    let msg = perfect ? `Nessun errore: +${bonus} punti bonus!` : `Errori: ${errors}${hints ? ` · suggerimenti: ${hints}` : ''}. Gli esercizi senza errori fanno avanzare il livello.`;
+    const canUp = S.level < 10 && p >= NEED;
+    if (perfect && p === NEED) msg += ` <b>Livello ${S.level} completato!</b>`;
+    showFb('star', `<div class="finish" style="text-align:left"><h2>Risultato: ${resultText()}</h2><p>${msg}</p><div class="btns" style="justify-content:flex-start"><button class="btn primary" id="againBtn">Nuovo esercizio</button>${canUp ? `<button class="btn" id="upBtn">Livello ${S.level + 1} →</button>` : ''}</div></div>`, null);
+    $('againBtn').onclick = () => newExercise();
+    if (canUp) $('upBtn').onclick = () => { S.level++; save(); newExercise(); };
+    setTimeout(() => $('againBtn').focus({ preventScroll: true }), 30);
+    renderLevels(); renderStats(); save();
+  }
+
+  function finishArcade(perfect) {
+    // in arcade un errore ha già interrotto il livello, quindi qui l'esercizio è perfetto
+    const lv = S.arc.level;
+    S.arc.open = false;
+    S.score += 5 * lv;
+    S.arc.progress++;
+    if (S.arc.progress >= ARCADE_EXERCISES) {
+      S.arc.certs[lv] = makeCert(S.arc.name, lv);
+      S.arc.dates[lv] = new Date().toLocaleDateString('it-IT');
+      S.arc.level = lv + 1; S.arc.progress = 0;
+      save();
+      showFb('star', `<div class="finish" style="text-align:left"><h2>Livello ${lv} superato!</h2><p>Hai ottenuto il certificato del livello ${lv}.</p><div class="btns" style="justify-content:flex-start"><button class="btn primary" id="againBtn">${lv < 10 ? `Vai al livello ${lv + 1} →` : 'Fine'}</button></div></div>`, null);
+      $('againBtn').onclick = () => newExercise();
+      renderLevels(); renderStats();
+      showCert(lv, true);
+      return;
+    }
+    save();
+    showFb('star', `<div class="finish" style="text-align:left"><h2>Risultato: ${resultText()}</h2><p>Perfetto! Esercizio ${S.arc.progress} di ${ARCADE_EXERCISES} del livello ${lv}.</p><div class="btns" style="justify-content:flex-start"><button class="btn primary" id="againBtn">Prossimo esercizio →</button></div></div>`, null);
+    $('againBtn').onclick = () => newExercise();
+    setTimeout(() => $('againBtn').focus({ preventScroll: true }), 30);
+    renderLevels(); renderStats();
+  }
+
+  // ---------- finestre ----------
+  function openModal(html) { $('mbox').innerHTML = html; $('modal').classList.add('show'); }
+  function closeModal() { $('modal').classList.remove('show'); }
+  $('modal').addEventListener('click', e => { if (e.target.id === 'modal' && !$('modal').dataset.locked) closeModal(); });
+
+  function askName(then) {
+    $('modal').dataset.locked = '1';
+    openModal(`<h2>Modalità Arcade</h2><p>Per passare al livello successivo devi risolvere <b>${ARCADE_EXERCISES} esercizi di fila senza nessun errore</b>. Un solo errore e il livello ricomincia. Niente suggerimenti, e se abbandoni un esercizio a metà il livello ricomincia.</p><p>Per ogni livello superato ricevi un <b>certificato con un codice</b> da mostrare all’insegnante. Il codice vale solo con il tuo nome.</p><label for="nm">Nome e cognome</label><input id="nm" autocomplete="off" value="${esc(S.arc.name)}" placeholder="es. Giulia Rossi"><div class="row2"><button class="btn ghost" id="nmCancel">Annulla</button><button class="btn primary" id="nmOk">Inizia</button></div>`);
+    setTimeout(() => $('nm').focus(), 30);
+    const ok = () => { const v = $('nm').value.trim(); if (normName(v).length < 3) { $('nm').style.borderColor = 'var(--red)'; return; } delete $('modal').dataset.locked; closeModal(); then(v); };
+    $('nmOk').onclick = ok; $('nm').onkeydown = e => { if (e.key === 'Enter') ok(); };
+    $('nmCancel').onclick = () => { delete $('modal').dataset.locked; closeModal(); };
+  }
+
+  function certHTML(lv, scratch) {
+    const code = S.arc.certs[lv];
+    return `<div class="cert" style="--h:${(lv * 33 + 200) % 360}"><div class="top"><div class="badge">${lv}</div><div><small>Certificato · Potenze passo passo</small><h3>Livello ${lv}: ${LEVELS[lv].title}</h3></div></div>
+      <div class="who">Rilasciato a <b>${esc(S.arc.name)}</b> il ${esc(S.arc.dates[lv] || '')}</div>
+      <div class="scratch" id="scr">${code}${scratch ? '<canvas id="scrc"></canvas>' : ''}</div></div>`;
+  }
+  function showCert(lv, scratch) {
+    openModal(`<h2>${scratch ? 'Complimenti!' : 'Il tuo certificato'}</h2><p>${scratch ? 'Gratta la cartina per scoprire il codice del certificato.' : 'Mostra questo codice all’insegnante insieme al tuo nome.'}</p>${certHTML(lv, scratch)}<p style="font-size:13px;margin-top:12px">Scrivi il codice sul quaderno: l’insegnante può verificarlo dall’area docente.</p><div class="row2"><button class="btn primary" id="cClose">Chiudi</button></div>`);
+    $('cClose').onclick = closeModal;
+    if (scratch) setupScratch($('scrc'));
+  }
+
+  function setupScratch(cv) {
+    const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    cv.width = r.width * dpr; cv.height = r.height * dpr;
+    const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+    const g = ctx.createLinearGradient(0, 0, r.width, r.height);
+    g.addColorStop(0, '#b9bec9'); g.addColorStop(.5, '#e7e9ee'); g.addColorStop(1, '#a9aebb');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, r.width, r.height);
+    ctx.fillStyle = 'rgba(60,66,90,.55)'; ctx.font = '800 15px "Nunito Sans",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('★  GRATTA QUI  ★', r.width / 2, r.height / 2);
+    ctx.globalCompositeOperation = 'destination-out';
+    let down = false, last = null;
+    const pos = e => { const b = cv.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; };
+    const draw = p => { ctx.lineWidth = 34; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(...(last || p)); ctx.lineTo(...p); ctx.stroke(); last = p; };
+    const cleared = () => { const d = ctx.getImageData(0, 0, cv.width, cv.height).data; let c = 0, n = 0; for (let i = 3; i < d.length; i += 64) { n++; if (d[i] === 0) c++; } return c / n; };
+    cv.addEventListener('pointerdown', e => { down = true; last = null; cv.setPointerCapture(e.pointerId); draw(pos(e)); });
+    cv.addEventListener('pointermove', e => { if (down) draw(pos(e)); });
+    const up = () => { if (!down) return; down = false; if (cleared() > 0.5) { cv.style.transition = 'opacity .4s'; cv.style.opacity = '0'; setTimeout(() => cv.remove(), 400); } };
+    cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  }
+
+  function showBoard() {
+    const items = [];
+    for (let i = 1; i <= 10; i++) {
+      const c = S.arc.certs[i];
+      items.push(`<div class="bd ${c ? '' : 'off'}" style="--h:${(i * 33 + 200) % 360}"><div class="n">${i}</div><b>${LEVELS[i].title}</b>${c ? `<code>${c}</code><small>${esc(S.arc.dates[i] || '')}</small>` : '<small style="display:block;margin-top:4px">da conquistare</small>'}</div>`);
+    }
+    openModal(`<h2>Bacheca certificati</h2><p>${S.arc.name ? `Certificati di <b>${esc(S.arc.name)}</b>` : 'Gioca in modalità Arcade per ottenere i certificati.'}</p><div class="badges">${items.join('')}</div><div class="row2">${S.arc.name ? '<button class="btn ghost" id="resetArc">Ricomincia da zero</button>' : ''}<button class="btn primary" id="bClose">Chiudi</button></div>`);
+    $('bClose').onclick = closeModal;
+    if ($('resetArc')) $('resetArc').onclick = () => {
+      $('mbox').innerHTML = `<h2>Ricominciare l’Arcade?</h2><p>Perderai tutti i certificati salvati su questo dispositivo (scrivili prima sul quaderno). Potrai anche cambiare nome.</p><div class="row2"><button class="btn ghost" id="rNo">Annulla</button><button class="btn primary" id="rYes" style="background:var(--red)">Sì, ricomincia</button></div>`;
+      $('rNo').onclick = closeModal;
+      $('rYes').onclick = () => { S.arc = { name: '', level: 1, progress: 0, certs: {}, dates: {} }; save(); closeModal(); if (arcade()) { S.mode = 'train'; setMode('arcade'); } };
+    };
+  }
+
+  function showFinale() {
+    $('opts').style.display = 'none'; hideFb();
+    $('board').innerHTML = '<div class="row res"><span class="eq"></span><b style="font-family:Fraunces,serif;font-size:24px">Tutti i 10 livelli superati. Campione delle potenze!</b></div>';
+    $('stepInfo').textContent = ''; $('code').textContent = '—';
+    $('ask').textContent = 'Arcade completato';
+    showFb('star', `<div class="finish" style="text-align:left"><h2>Complimenti, ${esc(S.arc.name)}!</h2><p>Hai tutti i certificati. Puoi rivederli nella bacheca.</p><div class="btns" style="justify-content:flex-start"><button class="btn primary" id="fbBoard">Bacheca certificati</button></div></div>`, null);
+    $('fbBoard').onclick = showBoard;
+  }
+
+  function showVerify() {
+    openModal(`<h2>Verifica certificato</h2><p>Inserisci il nome dello studente (come l’ha scritto nel gioco: maiuscole e accenti non contano) e il codice del certificato.</p><label for="vn">Nome e cognome</label><input id="vn" autocomplete="off"><label for="vc">Codice certificato</label><input id="vc" autocomplete="off" placeholder="L3-4821-0937"><div id="vr"></div><div class="row2"><button class="btn ghost" id="vClose">Chiudi</button><button class="btn primary" id="vGo">Verifica</button></div>`);
+    const go = () => {
+      const r = verifyCert($('vn').value, $('vc').value);
+      $('vr').innerHTML = r.ok ? `<div class="vres ok">✓ Certificato valido: livello ${r.level} (${LEVELS[r.level].title}).</div>` : `<div class="vres ko">✗ Non valido. ${r.why}</div>`;
+    };
+    $('vGo').onclick = go; $('vc').onkeydown = e => { if (e.key === 'Enter') go(); };
+    $('vClose').onclick = closeModal;
+    setTimeout(() => $('vn').focus(), 30);
+  }
+
+  function setMode(m) {
+    if (m === S.mode) return;
+    if (m === 'arcade' && !S.arc.name) { askName(name => { S.arc.name = name; S.mode = 'arcade'; save(); newExercise(); }); return; }
+    S.mode = m; save(); newExercise();
+  }
+
+  // ---------- eventi ----------
+  $('mTrain').onclick = () => setMode('train');
+  $('mArc').onclick = () => setMode('arcade');
+  $('boardBtn').onclick = showBoard;
+  $('verifyBtn').onclick = showVerify;
+  $('skipBtn').onclick = () => { S.streak = 0; save(); newExercise(); };
+  $('hintBtn').onclick = () => {
+    if (answered || arcade()) return;
+    hints++; S.score = Math.max(0, S.score - 3); renderStats(); save();
+    const names = [...new Set(G.solution.steps[k].redexes.map(r => r.rule.name))];
+    showFb('hint', `<h3>Suggerimento</h3><p>In questo passaggio si applica: <b>${names.join('</b> e <b>')}</b>.</p><p style="color:var(--ink-soft)">Ricorda: prima le parentesi più interne, poi quadre e graffe.</p>`, null);
+  };
+  $('codeBtn').onclick = () => {
+    const m = $('codeIn').value.trim().match(/^(\d{1,2})\s*-\s*(\d+)$/);
+    if (!m || +m[1] < 1 || +m[1] > 10) { $('codeIn').style.borderColor = 'var(--red)'; return; }
+    $('codeIn').style.borderColor = '';
+    S.mode = 'train'; S.level = +m[1]; save(); newExercise(+m[2]);
+  };
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && $('modal').classList.contains('show') && !$('modal').dataset.locked) { closeModal(); return; }
+    if ($('modal').classList.contains('show') || e.target.tagName === 'INPUT') return;
+    if (e.key.length !== 1) { if (e.key === 'Enter' && answered && $('nextBtn').style.display !== 'none' && document.activeElement !== $('nextBtn')) { $('nextBtn').click(); e.preventDefault(); } return; }
+    const n = '1234'.indexOf(e.key) >= 0 ? '1234'.indexOf(e.key) : 'abcd'.indexOf(e.key.toLowerCase());
+    if (n >= 0 && !answered && $('opts').style.display !== 'none') { choose(n); e.preventDefault(); }
+  });
+
+  if (arcade() && !S.arc.name) S.mode = 'train';
+  newExercise();
+})();
+
+</script>
+</body>
+</html>
